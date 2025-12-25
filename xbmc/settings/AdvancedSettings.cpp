@@ -407,6 +407,12 @@ void CAdvancedSettings::Initialize()
   m_iEdlCommBreakAutowait = 0;             // Off by default
   m_iEdlCommBreakAutowind = 0;             // Off by default
 
+  // Touchscreen  default values if no adjustment is necessary
+  m_screenAlign_xOffset = 0;
+  m_screenAlign_yOffset= 0;
+  m_screenAlign_xStretchFactor = 1.0;
+  m_screenAlign_yStretchFactor = 1.0;
+
   m_curlconnecttimeout = 30;
   m_curllowspeedtime = 20;
   m_curlretries = 2;
@@ -1014,6 +1020,16 @@ void CAdvancedSettings::ParseSettingsFile(const std::string &file)
     XMLUtils::GetInt(pElement, "maxstartgap", m_iEdlMaxStartGap, 0, 10 * 60);               // Between 0 and 10 minutes
     XMLUtils::GetInt(pElement, "commbreakautowait", m_iEdlCommBreakAutowait, -60, 60);        // Between -60 and 60 seconds
     XMLUtils::GetInt(pElement, "commbreakautowind", m_iEdlCommBreakAutowind, -60, 60);        // Between -60 and 60 seconds
+  }
+
+  // Touchscreen
+  pElement = pRootElement->FirstChildElement("touchscreen");
+  if (pElement)
+  {
+    XMLUtils::GetInt(pElement, "x_offset", m_screenAlign_xOffset );
+    XMLUtils::GetInt(pElement, "y_offset", m_screenAlign_yOffset );
+    XMLUtils::GetFloat(pElement, "x_stretch_factor", m_screenAlign_xStretchFactor );
+    XMLUtils::GetFloat(pElement, "y_stretch_factor", m_screenAlign_yStretchFactor );
   }
 
   // picture exclude regexps

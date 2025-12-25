@@ -1,12 +1,12 @@
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -6,6 +6,7 @@
- set(LIBCEC_VERSION_PATCH 1)
+ set(LIBCEC_VERSION_PATCH 0)
  
  # cec-client
 +if(ENABLE_CLIENT)
  add_subdirectory(src/cec-client)
- add_dependencies(cec-client cec-shared)
+ add_dependencies(cec-client cec)
  
 @@ -15,6 +16,7 @@
  

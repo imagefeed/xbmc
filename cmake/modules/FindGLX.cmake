@@ -8,25 +8,33 @@
 #   ${APP_NAME_LC}::GLX    - The GLX library
 
 if(NOT TARGET ${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME})
-  include(cmake/scripts/common/ModuleHelpers.cmake)
+  find_package(PkgConfig ${SEARCH_QUIET})
 
-  set(${CMAKE_FIND_PACKAGE_NAME}_MODULE_LC glx)
-  set(${${CMAKE_FIND_PACKAGE_NAME}_MODULE_LC}_DISABLE_VERSION ON)
+  if(PKG_CONFIG_FOUND)
+    pkg_check_modules(PC_GLX glx ${SEARCH_QUIET})
+  endif()
 
-  SETUP_BUILD_VARS()
+  find_path(GLX_INCLUDE_DIR NAMES GL/glx.h
+                            HINTS ${PC_GLX_INCLUDEDIR})
+  find_library(GLX_LIBRARY NAMES GL
+                           HINTS ${PC_GLX_LIBDIR})
 
-  SETUP_FIND_SPECS()
+  if(NOT VERBOSE_FIND)
+     set(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY TRUE)
+   endif()
 
-  SEARCH_EXISTING_PACKAGES()
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(GLX
+                                    REQUIRED_VARS GLX_LIBRARY GLX_INCLUDE_DIR)
 
-  if(${${CMAKE_FIND_PACKAGE_NAME}_SEARCH_NAME}_FOUND)
-    add_library(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} ALIAS PkgConfig::${${CMAKE_FIND_PACKAGE_NAME}_SEARCH_NAME})
-
+  if(GLX_FOUND)
     list(APPEND GL_INTERFACES_LIST glx)
     set(GL_INTERFACES_LIST ${GL_INTERFACES_LIST} PARENT_SCOPE)
 
-    set(${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_COMPILE_DEFINITIONS HAS_GLX)
-
-    ADD_TARGET_COMPILE_DEFINITION()
+    add_library(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} UNKNOWN IMPORTED)
+    set_target_properties(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
+                                                                     IMPORTED_LOCATION "${GLX_LIBRARY}"
+                                                                     INTERFACE_INCLUDE_DIRECTORIES "${GLX_INCLUDE_DIR}"
+                                                                     INTERFACE_COMPILE_DEFINITIONS HAS_GLX)
   endif()
 endif()

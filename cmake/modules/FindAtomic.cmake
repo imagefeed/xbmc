@@ -5,7 +5,7 @@
 #
 # This will define the following target:
 #
-#   ${APP_NAME_LC}::Atomic    - The ATOMIC library
+#   ${APP_NAME_LC}::ATOMIC    - The ATOMIC library
 
 if(NOT TARGET ${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME})
   include(CheckCXXSourceCompiles)
@@ -26,21 +26,17 @@ if(NOT TARGET ${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME})
   check_cxx_source_compiles("${atomic_code}" ATOMIC_LOCK_FREE_INSTRUCTIONS)
 
   if(ATOMIC_LOCK_FREE_INSTRUCTIONS)
-    if(VERBOSE_FIND)
-      find_package_message(Atomic "Found Atomic: Lock Free" "")
-    endif()
+    find_package_message(Atomic "Found Atomic: Lock Free" "")
   else()
     set(CMAKE_REQUIRED_LIBRARIES "-latomic")
     check_cxx_source_compiles("${atomic_code}" ATOMIC_IN_LIBRARY)
     set(CMAKE_REQUIRED_LIBRARIES)
     if(ATOMIC_IN_LIBRARY)
-      if(VERBOSE_FIND)
-        find_package_message(Atomic "Found Atomic library: -latomic" "")
-      endif()
+      find_package_message(Atomic "Found Atomic library: -latomic" "")
 
-      add_library(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} INTERFACE IMPORTED)
+      add_library(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} UNKNOWN IMPORTED)
       set_target_properties(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
-                                                                       INTERFACE_LINK_LIBRARIES "-latomic")
+                                                                       IMPORTED_LOCATION "-latomic")
     else()
       if(Atomic_FIND_REQUIRED)
         message(FATAL_ERROR "Neither lock free instructions nor -latomic found.")

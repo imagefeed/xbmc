@@ -36,11 +36,10 @@ if(NOT TARGET LibDvdCSS::LibDvdCSS)
   endif()
 
   if(APPLE)
-    set(${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_LINK_LIBRARIES "-framework CoreFoundation")
+    set(LIBDVDCSS_FLAGS " -framework CoreFoundation")
     if(NOT CORE_SYSTEM_NAME STREQUAL darwin_embedded)
-      list(APPEND ${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_LINK_LIBRARIES "-framework IOKit")
+      string(APPEND LIBDVDCSS_FLAGS " -framework IOKit")
     endif()
-    string(REPLACE ";" " " LIBDVDCSS_FLAGS "${${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_LINK_LIBRARIES}")
   endif()
 
   if(CORE_SYSTEM_NAME MATCHES windows)
@@ -74,13 +73,22 @@ if(NOT TARGET LibDvdCSS::LibDvdCSS)
 
   BUILD_DEP_TARGET()
 
-  if(${${CMAKE_FIND_PACKAGE_NAME}_SEARCH_NAME}_FOUND)
-    SETUP_BUILD_TARGET()
+  if(NOT VERBOSE_FIND)
+     set(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY TRUE)
+   endif()
 
-    set(${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_COMPILE_DEFINITIONS HAVE_DVDCSS_DVDCSS_H)
-    ADD_TARGET_COMPILE_DEFINITION()
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(LibDvdCSS
+                                    REQUIRED_VARS LIBDVDCSS_LIBRARY LIBDVDCSS_INCLUDE_DIR
+                                    VERSION_VAR LIBDVDCSS_VERSION)
 
-    add_dependencies(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} ${${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_BUILD_NAME})
+  if(LibDvdCSS_FOUND)
+    add_library(LibDvdCSS::LibDvdCSS STATIC IMPORTED)
+    set_target_properties(LibDvdCSS::LibDvdCSS PROPERTIES
+                                               IMPORTED_LOCATION "${LIBDVDCSS_LIBRARY}"
+                                               INTERFACE_COMPILE_DEFINITIONS "HAVE_DVDCSS_DVDCSS_H"
+                                               INTERFACE_INCLUDE_DIRECTORIES "${LIBDVDCSS_INCLUDE_DIR}")
+    add_dependencies(LibDvdCSS::LibDvdCSS ${${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_BUILD_NAME})
   else()
     if(LibDvdCSS_FIND_REQUIRED)
       message(FATAL_ERROR "Libdvdcss not found. Possibly remove ENABLE_DVDCSS.")

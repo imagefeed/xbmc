@@ -42,12 +42,11 @@ if(NOT TARGET LibDvdRead::LibDvdRead)
   string(APPEND ${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_CFLAGS "-D_XBMC")
 
   if(APPLE)
-    set(${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_LINK_LIBRARIES "-framework CoreFoundation")
+    set(${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_LDFLAGS "-framework CoreFoundation")
     string(APPEND ${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_CFLAGS " -D__DARWIN__")
     if(NOT CORE_SYSTEM_NAME STREQUAL darwin_embedded)
-      list(APPEND ${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_LINK_LIBRARIES "-framework IOKit")
+      string(APPEND ${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_LDFLAGS " -framework IOKit")
     endif()
-    string(REPLACE ";" " " ${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_LDFLAGS "${${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_LINK_LIBRARIES}")
   endif()
 
   if(CORE_SYSTEM_NAME MATCHES windows)
@@ -56,8 +55,8 @@ if(NOT TARGET LibDvdRead::LibDvdRead)
                    ${LIBDVD_ADDITIONAL_ARGS})
   else()
 
-    if(TARGET ${APP_NAME_LC}::LibDvdCSS)
-      string(APPEND ${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_CFLAGS " -I$<TARGET_PROPERTY:${APP_NAME_LC}::LibDvdCSS,INTERFACE_INCLUDE_DIRECTORIES> $<$<TARGET_EXISTS:${APP_NAME_LC}::LibDvdCSS>:-D$<TARGET_PROPERTY:${APP_NAME_LC}::LibDvdCSS,INTERFACE_COMPILE_DEFINITIONS>>")
+    if(TARGET LibDvdCSS::LibDvdCSS)
+      string(APPEND ${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_CFLAGS " -I$<TARGET_PROPERTY:LibDvdCSS::LibDvdCSS,INTERFACE_INCLUDE_DIRECTORIES> $<$<TARGET_EXISTS:LibDvdCSS::LibDvdCSS>:-D$<TARGET_PROPERTY:LibDvdCSS::LibDvdCSS,INTERFACE_COMPILE_DEFINITIONS>>")
       set(with-css "--with-libdvdcss")
     endif()
 
@@ -89,20 +88,32 @@ if(NOT TARGET LibDvdRead::LibDvdRead)
 
   BUILD_DEP_TARGET()
 
-  if(TARGET ${APP_NAME_LC}::LibDvdCSS)
-    add_dependencies(${${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_BUILD_NAME} ${APP_NAME_LC}::LibDvdCSS)
+  if(TARGET LibDvdCSS::LibDvdCSS)
+    add_dependencies(${${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_BUILD_NAME} LibDvdCSS::LibDvdCSS)
   endif()
 
-  if(${${CMAKE_FIND_PACKAGE_NAME}_SEARCH_NAME}_FOUND)
-    SETUP_BUILD_TARGET()
+  if(NOT VERBOSE_FIND)
+     set(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY TRUE)
+   endif()
 
-    if(TARGET ${APP_NAME_LC}::LibDvdCSS)
-      set_target_properties(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
-                                                                       INTERFACE_LINK_LIBRARIES ${APP_NAME_LC}::LibDvdCSS)
-      add_dependencies(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} ${APP_NAME_LC}::LibDvdCSS)
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(LibDvdRead
+                                    REQUIRED_VARS LIBDVDREAD_LIBRARY LIBDVDREAD_INCLUDE_DIR
+                                    VERSION_VAR LIBDVDREAD_VERSION)
+
+  if(LibDvdRead_FOUND)
+    add_library(LibDvdRead::LibDvdRead STATIC IMPORTED)
+    set_target_properties(LibDvdRead::LibDvdRead PROPERTIES
+                                                 IMPORTED_LOCATION "${LIBDVDREAD_LIBRARY}"
+                                                 INTERFACE_INCLUDE_DIRECTORIES "${LIBDVDREAD_INCLUDE_DIR}")
+
+    if(TARGET LibDvdCSS::LibDvdCSS)
+      set_target_properties(LibDvdRead::LibDvdRead PROPERTIES
+                                                   INTERFACE_LINK_LIBRARIES LibDvdCSS::LibDvdCSS)
+      add_dependencies(LibDvdRead::LibDvdRead LibDvdCSS::LibDvdCSS)
     endif()
 
-    add_dependencies(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} ${${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_BUILD_NAME})
+    add_dependencies(LibDvdRead::LibDvdRead ${${${CMAKE_FIND_PACKAGE_NAME}_MODULE}_BUILD_NAME})
   else()
     if(LibDvdRead_FIND_REQUIRED)
       message(FATAL_ERROR "Libdvdread not found")

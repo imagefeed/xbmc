@@ -407,12 +407,6 @@ void CAdvancedSettings::Initialize()
   m_iEdlCommBreakAutowait = 0;             // Off by default
   m_iEdlCommBreakAutowind = 0;             // Off by default
 
-  // Touchscreen  default values if no adjustment is necessary
-  m_screenAlign_xOffset = 0;
-  m_screenAlign_yOffset= 0;
-  m_screenAlign_xStretchFactor = 1.0;
-  m_screenAlign_yStretchFactor = 1.0;
-
   m_curlconnecttimeout = 30;
   m_curllowspeedtime = 20;
   m_curlretries = 2;
@@ -440,11 +434,6 @@ void CAdvancedSettings::Initialize()
 
   m_cpuTempCmd = "";
   m_gpuTempCmd = "";
-
-  m_powerdownCommand = "";
-  m_rebootCommand = "";
-  m_suspendCommand = "";
-  m_hibernateCommand = "";
 #if defined(TARGET_DARWIN)
   // default for osx is fullscreen always on top
   m_alwaysOnTop = true;
@@ -1022,16 +1011,6 @@ void CAdvancedSettings::ParseSettingsFile(const std::string &file)
     XMLUtils::GetInt(pElement, "commbreakautowind", m_iEdlCommBreakAutowind, -60, 60);        // Between -60 and 60 seconds
   }
 
-  // Touchscreen
-  pElement = pRootElement->FirstChildElement("touchscreen");
-  if (pElement)
-  {
-    XMLUtils::GetInt(pElement, "x_offset", m_screenAlign_xOffset );
-    XMLUtils::GetInt(pElement, "y_offset", m_screenAlign_yOffset );
-    XMLUtils::GetFloat(pElement, "x_stretch_factor", m_screenAlign_xStretchFactor );
-    XMLUtils::GetFloat(pElement, "y_stretch_factor", m_screenAlign_yStretchFactor );
-  }
-
   // picture exclude regexps
   TiXmlElement* pPictureExcludes = pRootElement->FirstChildElement("pictureexcludes");
   if (pPictureExcludes)
@@ -1193,15 +1172,6 @@ void CAdvancedSettings::ParseSettingsFile(const std::string &file)
 
   XMLUtils::GetString(pRootElement, "cputempcommand", m_cpuTempCmd);
   XMLUtils::GetString(pRootElement, "gputempcommand", m_gpuTempCmd);
-
-  const TiXmlElement* pPowerManagement = pRootElement->FirstChildElement("powermanagement");
-  if (pPowerManagement)
-  {
-    XMLUtils::GetString(pPowerManagement, "powerdown", m_powerdownCommand);
-    XMLUtils::GetString(pPowerManagement, "reboot", m_rebootCommand);
-    XMLUtils::GetString(pPowerManagement, "suspend", m_suspendCommand);
-    XMLUtils::GetString(pPowerManagement, "hibernate", m_hibernateCommand);
-  }
 
   XMLUtils::GetBoolean(pRootElement, "alwaysontop", m_alwaysOnTop);
 

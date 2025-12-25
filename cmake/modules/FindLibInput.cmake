@@ -8,20 +8,34 @@
 #   ${APP_NAME_LC}::LibInput   - The LibInput library
 
 if(NOT TARGET ${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME})
+  find_package(PkgConfig ${SEARCH_QUIET})
 
-  include(cmake/scripts/common/ModuleHelpers.cmake)
+  if(PKG_CONFIG_FOUND)
+    pkg_check_modules(PC_LIBINPUT libinput ${SEARCH_QUIET})
+  endif()
 
-  set(${CMAKE_FIND_PACKAGE_NAME}_MODULE_LC libinput)
-  set(${${CMAKE_FIND_PACKAGE_NAME}_MODULE_LC}_DISABLE_VERSION ON)
+  find_path(LIBINPUT_INCLUDE_DIR NAMES libinput.h
+                                 HINTS ${PC_LIBINPUT_INCLUDEDIR})
 
-  SETUP_BUILD_VARS()
+  find_library(LIBINPUT_LIBRARY NAMES input
+                                HINTS ${PC_LIBINPUT_LIBDIR})
 
-  SETUP_FIND_SPECS()
+  set(LIBINPUT_VERSION ${PC_LIBINPUT_VERSION})
 
-  SEARCH_EXISTING_PACKAGES()
+  if(NOT VERBOSE_FIND)
+     set(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY TRUE)
+   endif()
 
-  if(${${CMAKE_FIND_PACKAGE_NAME}_SEARCH_NAME}_FOUND)
-    add_library(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} ALIAS PkgConfig::${${CMAKE_FIND_PACKAGE_NAME}_SEARCH_NAME})
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(LibInput
+                                    REQUIRED_VARS LIBINPUT_LIBRARY LIBINPUT_INCLUDE_DIR
+                                    VERSION_VAR LIBINPUT_VERSION)
+
+  if(LIBINPUT_FOUND)
+    add_library(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} UNKNOWN IMPORTED)
+    set_target_properties(${APP_NAME_LC}::${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
+                                                                     IMPORTED_LOCATION "${LIBINPUT_LIBRARY}"
+                                                                     INTERFACE_INCLUDE_DIRECTORIES "${LIBINPUT_INCLUDE_DIR}")
   else()
     if(LibInput_FIND_REQUIRED)
       message(FATAL_ERROR "Libinput libraries were not found.")

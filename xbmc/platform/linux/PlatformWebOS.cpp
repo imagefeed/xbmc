@@ -75,7 +75,6 @@ bool CPlatformWebOS::InitStageTwo()
     CLog::Log(LOGERROR, "Failed to disable core dumps");
 
   WebOSTVPlatformConfig::Load();
-  WebOSTVPlatformConfig::LoadARCStatus();
   return CPlatformLinux::InitStageTwo();
 }
 
